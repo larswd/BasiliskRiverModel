@@ -13,6 +13,22 @@ scalar w;
 #include "libs/output_vts.h"
 
 static int level;
+
+/*
+  Simulation parameters,
+  Q1, Q2 are flux in river 1 and 2 respectively
+  slope is the steepness of the decline (in meters per 10 meter)
+  xslopefac is a linear xslope-term for steepness of decline in positive x direction
+  a4,a2 are coefficients of fourth and second order term
+*/
+static double Q1        = 5;
+static double Q2        = 3;
+static double slope     = 1;
+static double xslopefac = 1e-2; 
+static double a4        = 0.05;
+static double a2        = 0.9;
+
+
 int main(int argc, char * argv[]){
   // Numerical resolution given as command line argument
   if (argc <=1){
@@ -34,7 +50,7 @@ scalar river[];
 event init(i = 0){
   DT = 1e-2;
   foreach(serial){
-    zb[] = 0.05*pow(x,4) - x*x + 2. + 0.2*(y + Y0);
+    zb[] = a4*pow(x,4) - a2*x*x + 2. + slope*(1 + xslopefac*x)*(y + Y0);
     river[] = x < 0 ? 1 : 2;
   }
   u.n[top] = neumann(0);
@@ -45,8 +61,8 @@ event init(i = 0){
 
 double eta1, eta2;
 event inflow(i++){
-  eta1 = eta_b(4, top, river, 1);
-  eta2 = eta_b(2, top, river, 2);
+  eta1 = eta_b(Q1, top, river, 1);
+  eta2 = eta_b(Q2, top, river, 2);
   h[top] = max ((river[] == 1. ? eta1 : eta2) - zb[], 0.);
   eta[top] = max ((river[] == 1. ? eta1 : eta2) - zb[], 0.) + zb[];
 }
@@ -63,7 +79,7 @@ event volume (i += 10) {
 	   t, volume1, volume2, eta1, eta2);
 }
 
-event animation (t <= 1.2; i += 10) {
+event animation (t <= 1; i += 10) {
   static int j = 0;
   char name[100];
   printf("Making plotfile\n");
