@@ -1,6 +1,6 @@
 CC=qcc
 PREFLAGS=-fopenmp -Wall -O2 -DLAYERS=1 -g -disable-dimensions
-POSTFLAGS= -L$(BASILISK)/ppr -lppr -lm
+POSTFLAGS=-lm
 TARGET=river
 DEPS=
 DIRS=plots logs
