@@ -25,12 +25,12 @@ void output_vts_ascii_single_layer(FILE* fp, scalar* list, int layerid, bool dis
 
 #if dimension == 1
     fprintf(fp, "\t <StructuredGrid WholeExtent=\"%d %d %d %d 0 0\">\n", 0, N, 0, 0);
-    fprintf(fp, "\t\t <Piece Extent=\"%d %d %d %d  0 0\">\n", 0, N, 0, nl);
+    fprintf(fp, "\t\t <Piece Extent=\"%d %d %d %d  0 0\">\n", 0, N, 0, 1);
 #endif
 
 #if dimension == 2
     fprintf(fp, "\t <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0, N, 0, N, 0, 0);
-    fprintf(fp, "\t\t <Piece Extent=\"%d %d %d %d %d %d\">\n", 0, N, 0, N, 0, nl);
+    fprintf(fp, "\t\t <Piece Extent=\"%d %d %d %d %d %d\">\n", 0, N, 0, N, 0, 1);
 #endif
 
     // Loop over velocity data and store kinematics in cell vector stucture
@@ -251,9 +251,26 @@ void output_vts_ascii_all_layers(FILE* fp, scalar* list, int N)
         for(int i = nl-1; i >= 0; i--){
             j = 0;
             foreach_vertex(serial) {
-                fprintf(fp, "%12.4f %12.4f %12.4f\n", x,y, zcorr[j]);
+                int xshift, yshift;
+                if ((x > X0) && (x < X0 + L0)){
+                    xshift = 0;
+                } else if (x < X0) {
+                    xshift = 1;
+                } else {
+                    xshift = -1;
+                }
                 
-                if (h[0,0,i] < 1e-3){
+                if ((y > Y0) && (y < Y0 + L0)){
+                    yshift = 0;
+                } else if (y < Y0){
+                    yshift = 1;
+                } else {
+                    yshift = -1;
+                }
+
+                fprintf(fp, "%12.4f %12.4f %12.4f\n", x,y, zb[xshift, yshift] + h[xshift, yshift]);
+                
+                if (h[] < dry){
                     zcorr[j] = zcorr[j] - h[-1,-1,i];
                 } else {
                     zcorr[j] = zcorr[j] - h[0,0,i];
@@ -263,7 +280,7 @@ void output_vts_ascii_all_layers(FILE* fp, scalar* list, int N)
         }
         j = 0;
         foreach_vertex(serial){
-                fprintf(fp, "%12.4f %12.4f %12.4f\n", x,y, zcorr[j]);
+                fprintf(fp, "%12.4f %12.4f %12.4f\n", x,y, zb[]);
                 j++;
         }
         free(zcorr);

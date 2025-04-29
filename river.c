@@ -1,7 +1,16 @@
 #include "grid/multigrid.h"
-#include "layered/hydro.h"
+#include "saint-venant.h"
+#include "discharge.h"
+
+/*
+Plotting utility
+*/
+#if LAYERED
+#else
+scalar w;
+#endif
+
 #include "libs/output_vts.h"
-#include "libs/discharge_ml.h"
 
 static int level;
 int main(int argc, char * argv[]){
@@ -24,13 +33,12 @@ int main(int argc, char * argv[]){
 scalar river[];
 event init(i = 0){
   DT = 1e-2;
-  river = new scalar[nl];
-  foreach(){
+  foreach(serial){
     zb[] = 0.05*pow(x,4) - x*x + 2. + 0.2*(y + Y0);
-    river = river[] = x < 0 ? 1 : 2;
+    river[] = x < 0 ? 1 : 2;
   }
   u.n[top] = neumann(0);
-  u.t[top] = dirichlet(0)
+  u.t[top] = dirichlet(0);
 
   u.n[bottom] = neumann(0);
 }
@@ -43,6 +51,24 @@ event inflow(i++){
   eta[top] = max ((river[] == 1. ? eta1 : eta2) - zb[], 0.) + zb[];
 }
 
-event cleanup(t=end){
-  delete((scalar*){river});
+
+event volume (i += 10) {
+  double volume1 = 0, volume2 = 0;
+  foreach(reduction(+:volume1) reduction(+:volume2)) {
+    double dv = h[]*sq(Delta);
+    if (x < 0) volume1 += dv;
+    else volume2 += dv;
+  }
+  fprintf (stderr, "%g %g %g %g %g\n",
+	   t, volume1, volume2, eta1, eta2);
+}
+
+event animation (t <= 1.2; i += 10) {
+  static int j = 0;
+  char name[100];
+  printf("Making plotfile\n");
+  sprintf(name, "plots/field_%.6i.vts", j++);
+  FILE* fp = fopen(name, "w");
+  output_vts_ascii_all_layers(fp, {eta,zb}, N);
+  fclose(fp);
 }
