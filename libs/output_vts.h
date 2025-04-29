@@ -172,6 +172,8 @@ void output_vts_ascii_all_layers(FILE* fp, scalar* list, int N)
 #if dimension == 2
         if (h[]> dry)
           fprintf(fp, "%g %g %g\n", u.x[0,0,i], u.y[0,0,i], w[0,0,i]);
+        else
+          fprintf(fp, "0 0 0\n");
 #endif
     }
     }
