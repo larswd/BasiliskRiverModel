@@ -21,10 +21,10 @@ static int level;
   xslopefac is a linear xslope-term for steepness of decline in positive x direction
   a4,a2 are coefficients of fourth and second order term
 */
-static double Q1        = 5;
-static double Q2        = 3;
+static double Q1        = 2;
+static double Q2        = 1;
 static double slope     = 1;
-static double xslopefac = 1e-2; 
+static double xslopefac = 1e-9; 
 static double a4        = 0.05;
 static double a2        = 0.9;
 
@@ -52,6 +52,7 @@ event init(i = 0){
   foreach(serial){
     zb[] = a4*pow(x,4) - a2*x*x + 2. + slope*(1 + xslopefac*x)*(y + Y0);
     river[] = x < 0 ? 1 : 2;
+    u.x[]  = 0.0;
   }
   u.n[top] = neumann(0);
   u.t[top] = dirichlet(0);

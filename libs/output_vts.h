@@ -246,13 +246,7 @@ void output_vts_ascii_all_layers(FILE* fp, scalar* list, int N)
 #if dimension == 2
     fputs("\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n", fp);
         
-        double* zcorr = (double*)malloc((N+1)*(N+1)*sizeof(double));
-        for (int j = 0; j < (N+1)*(N+1); j++){
-            zcorr[j] = 0;
-        }
-        int j;
         for(int i = nl-1; i >= 0; i--){
-            j = 0;
             foreach_vertex(serial) {
                 int xshift, yshift;
                 if ((x > X0) && (x < X0 + L0)){
@@ -272,21 +266,11 @@ void output_vts_ascii_all_layers(FILE* fp, scalar* list, int N)
                 }
 
                 fprintf(fp, "%12.4f %12.4f %12.4f\n", x,y, zb[xshift, yshift] + h[xshift, yshift]);
-                
-                if (h[] < dry){
-                    zcorr[j] = zcorr[j] - h[-1,-1,i];
-                } else {
-                    zcorr[j] = zcorr[j] - h[0,0,i];
-                }
-                j++;
             }
         }
-        j = 0;
         foreach_vertex(serial){
                 fprintf(fp, "%12.4f %12.4f %12.4f\n", x,y, zb[]);
-                j++;
         }
-        free(zcorr);
 #endif
 
     fputs("\t\t\t\t </DataArray>\n", fp);
